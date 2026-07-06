@@ -1,0 +1,38 @@
+services:
+  service-a:
+    build:
+      context: ./service-a
+    ports:
+      - "8080:8080"
+    environment:
+      - SERVICE_B_URL=http://service-b:8081
+      - OTEL_EXPORTER_OTLP_ENDPOINT=otel-collector:4317
+    depends_on:
+      - service-b
+      - otel-collector
+
+  service-b:
+    build:
+      context: ./service-b
+    ports:
+      - "8081:8081"
+    environment:
+      - WEATHER_API_KEY=${WEATHER_API_KEY}
+      - OTEL_EXPORTER_OTLP_ENDPOINT=otel-collector:4317
+    depends_on:
+      - otel-collector
+
+  zipkin:
+    image: openzipkin/zipkin:latest
+    ports:
+      - "9411:9411"
+
+  otel-collector:
+    image: otel/opentelemetry-collector:latest
+    command: ["--config=/etc/otel-collector-config.yaml"]
+    volumes:
+      - ./.docker/otel-collector-config.yaml:/etc/otel-collector-config.yaml
+    ports:
+      - "4317:4317"
+    depends_on:
+      - zipkin
