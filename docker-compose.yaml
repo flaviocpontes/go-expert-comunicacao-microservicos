@@ -25,12 +25,12 @@ services:
     restart: on-failure
 
   zipkin:
-    image: openzipkin/zipkin:latest
+    image: openzipkin/zipkin:3
     ports:
       - "9411:9411"
 
   otel-collector:
-    image: otel/opentelemetry-collector-contrib:latest
+    image: otel/opentelemetry-collector-contrib:0.156.0
     command: ["--config=/etc/otel-collector-config.yaml"]
     volumes:
       - ./.docker/otel-collector-config.yaml:/etc/otel-collector-config.yaml
