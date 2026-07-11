@@ -4,8 +4,8 @@ import (
 	"encoding/json"
 	"net/http"
 
-	"github.com/flaviocpontes/go-expert-comunicacao-microservicos/service-b/internal/clients/viacep"
-	"github.com/flaviocpontes/go-expert-comunicacao-microservicos/service-b/internal/clients/weather"
+	"github.com/flaviocpontes/go-expert-comunicacao-microservicos/service-b/pkg/clients/viacep"
+	"github.com/flaviocpontes/go-expert-comunicacao-microservicos/service-b/pkg/clients/weather"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/propagation"
 )
@@ -79,7 +79,7 @@ func (h *ServiceBHandler) Handle(w http.ResponseWriter, r *http.Request) {
 	// 3. Convert and Respond
 	tempC := weatherResp.Current.TempC
 	tempF := tempC*1.8 + 32
-	tempK := tempC + 273
+	tempK := tempC + 273.15
 
 	res := SuccessResponse{
 		City:  viaCepResp.Localidade,

@@ -7,8 +7,8 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/flaviocpontes/go-expert-comunicacao-microservicos/service-a/internal/clients/serviceb"
 	"github.com/flaviocpontes/go-expert-comunicacao-microservicos/service-a/internal/config"
+	"github.com/flaviocpontes/go-expert-comunicacao-microservicos/service-a/pkg/clients/serviceb"
 	"github.com/flaviocpontes/go-expert-comunicacao-microservicos/service-a/pkg/servicea"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc"

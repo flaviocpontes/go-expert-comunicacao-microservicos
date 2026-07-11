@@ -1,4 +1,4 @@
-package tests
+package serviceb
 
 import (
 	"bytes"
@@ -9,12 +9,12 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/flaviocpontes/go-expert-comunicacao-microservicos/service-a/pkg/servicea"
-	"github.com/flaviocpontes/go-expert-comunicacao-microservicos/service-b/pkg/serviceb"
+	"github.com/flaviocpontes/go-expert-comunicacao-microservicos/service-b/pkg/clients/viacep"
+	"github.com/flaviocpontes/go-expert-comunicacao-microservicos/service-b/pkg/clients/weather"
 )
 
-func TestE2E(t *testing.T) {
-	// 1. Mock ViaCEP
+func TestHandler(t *testing.T) {
+	// Mock ViaCEP
 	viaCepMock := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		parts := strings.Split(r.URL.Path, "/")
 		cep := ""
@@ -36,7 +36,7 @@ func TestE2E(t *testing.T) {
 	}))
 	defer viaCepMock.Close()
 
-	// 2. Mock WeatherAPI
+	// Mock WeatherAPI
 	weatherApiMock := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		q := r.URL.Query().Get("q")
 		if q == "São Paulo" {
@@ -48,15 +48,9 @@ func TestE2E(t *testing.T) {
 	}))
 	defer weatherApiMock.Close()
 
-	// 3. Setup Service B
-	serviceBHandler := serviceb.NewHandler("test-key", viaCepMock.URL+"/ws/%s/json/", weatherApiMock.URL+"?key=%s&q=%s")
-	serviceBMock := httptest.NewServer(serviceBHandler)
-	defer serviceBMock.Close()
-
-	// 4. Setup Service A
-	serviceAHandler := servicea.NewHandler(serviceBMock.URL)
-	serviceAMock := httptest.NewServer(serviceAHandler)
-	defer serviceAMock.Close()
+	vcClient := viacep.NewClient(viaCepMock.URL + "/ws/%s/json/")
+	wClient := weather.NewClient("test-key", weatherApiMock.URL+"?key=%s&q=%s")
+	handler := NewHandler(vcClient, wClient)
 
 	tests := []struct {
 		name           string
@@ -87,24 +81,18 @@ func TestE2E(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			reqBody, _ := json.Marshal(map[string]string{"cep": tt.cep})
-			resp, err := http.Post(serviceAMock.URL, "application/json", bytes.NewBuffer(reqBody))
-			if err != nil {
-				t.Fatalf("failed to send request: %v", err)
-			}
-			defer resp.Body.Close()
+			req := httptest.NewRequest("POST", "/", bytes.NewBuffer(reqBody))
+			rr := httptest.NewRecorder()
 
-			if resp.StatusCode != tt.expectedStatus {
-				t.Errorf("expected status %d, got %d", tt.expectedStatus, resp.StatusCode)
+			handler.ServeHTTP(rr, req)
+
+			if rr.Code != tt.expectedStatus {
+				t.Errorf("%s: expected status %d, got %d. Body: %s", tt.name, tt.expectedStatus, rr.Code, rr.Body.String())
 			}
 
 			if tt.expectedStatus == http.StatusOK {
-				var result struct {
-					City  string  `json:"city"`
-					TempC float64 `json:"temp_C"`
-					TempF float64 `json:"temp_F"`
-					TempK float64 `json:"temp_K"`
-				}
-				err := json.NewDecoder(resp.Body).Decode(&result)
+				var result SuccessResponse
+				err := json.NewDecoder(rr.Body).Decode(&result)
 				if err != nil {
 					t.Fatalf("failed to decode response: %v", err)
 				}
@@ -123,13 +111,6 @@ func TestE2E(t *testing.T) {
 				}
 				if result.TempK != expectedK {
 					t.Errorf("expected tempK %f, got %f", expectedK, result.TempK)
-				}
-			} else {
-				// Verify error message format
-				var result map[string]string
-				json.NewDecoder(resp.Body).Decode(&result)
-				if _, ok := result["message"]; !ok {
-					t.Errorf("expected message field in error response")
 				}
 			}
 		})

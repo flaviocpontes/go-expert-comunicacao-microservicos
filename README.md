@@ -65,7 +65,7 @@ The project includes automated end-to-end tests that mock external dependencies 
 To run the tests, ensure you are at the project root and execute:
 
 ```bash
-go test -v ./tests
+go test ./service-a/... ./service-b/...
 ```
 
 These tests verify the entire flow from Service A to Service B, including:

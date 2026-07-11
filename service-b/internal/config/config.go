@@ -1,6 +1,7 @@
 package config
 
 import (
+	"errors"
 	"os"
 	"regexp"
 )
@@ -13,11 +14,11 @@ type Config struct {
 	WeatherURLTemplate   string
 }
 
-func LoadConfig() *Config {
+func LoadConfig() (*Config, error) {
 	weatherAPIKey := os.Getenv("WEATHER_API_KEY")
 	matched, _ := regexp.MatchString(`^[a-z0-9]{31}$`, weatherAPIKey)
 	if !matched {
-		panic("The Weather API Key is missing. Acquire on at https://www.weatherapi.com and save it a `.env` file in the root of the project or invoke docker compose up using it as an environment variable. You can do it in the following way:\n\nWEATHER_API_KEY={API_KEY} docker compose up")
+		return nil, errors.New("The Weather API Key is missing or invalid. Acquire one at https://www.weatherapi.com and save it a `.env` file in the root of the project or invoke `docker compose up` using it as an environment variable. You can do it in the following way:\n\n`WEATHER_API_KEY={API_KEY} docker compose up`")
 	}
 	port := os.Getenv("PORT")
 	if port == "" {
@@ -35,5 +36,5 @@ func LoadConfig() *Config {
 		OtelExporterEndpoint: otelExporterEndpoint,
 		ViaCepURLTemplate:    "https://viacep.com.br/ws/%s/json/",
 		WeatherURLTemplate:   "https://api.weatherapi.com/v1/current.json?key=%s&q=%s",
-	}
+	}, nil
 }

@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"regexp"
 
-	"github.com/flaviocpontes/go-expert-comunicacao-microservicos/service-a/internal/clients/serviceb"
+	"github.com/flaviocpontes/go-expert-comunicacao-microservicos/service-a/pkg/clients/serviceb"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/propagation"
 )

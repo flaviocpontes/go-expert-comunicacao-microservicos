@@ -7,9 +7,9 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/flaviocpontes/go-expert-comunicacao-microservicos/service-b/internal/clients/viacep"
-	"github.com/flaviocpontes/go-expert-comunicacao-microservicos/service-b/internal/clients/weather"
 	"github.com/flaviocpontes/go-expert-comunicacao-microservicos/service-b/internal/config"
+	"github.com/flaviocpontes/go-expert-comunicacao-microservicos/service-b/pkg/clients/viacep"
+	"github.com/flaviocpontes/go-expert-comunicacao-microservicos/service-b/pkg/clients/weather"
 	"github.com/flaviocpontes/go-expert-comunicacao-microservicos/service-b/pkg/serviceb"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc"
@@ -61,7 +61,10 @@ func initTracer(otelCollectorAddr string) (*sdktrace.TracerProvider, error) {
 }
 
 func main() {
-	cfg := config.LoadConfig()
+	cfg, err := config.LoadConfig()
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	tp, err := initTracer(cfg.OtelExporterEndpoint)
 	if err != nil {
@@ -72,10 +75,6 @@ func main() {
 			log.Printf("Error shutting down tracer provider: %v", err)
 		}
 	}()
-
-	if cfg.WeatherAPIKey == "" {
-		log.Println("WARNING: WEATHER_API_KEY is not set")
-	}
 
 	viaCepClient := viacep.NewClient(cfg.ViaCepURLTemplate)
 	weatherClient := weather.NewClient(cfg.WeatherAPIKey, cfg.WeatherURLTemplate)
