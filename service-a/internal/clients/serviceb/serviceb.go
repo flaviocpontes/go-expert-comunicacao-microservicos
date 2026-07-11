@@ -22,6 +22,10 @@ func NewClient(baseURL string) *Client {
 }
 
 func (c *Client) ForwardRequest(ctx context.Context, cep string) (int, []byte, error) {
+	tr := otel.Tracer("service-a")
+	ctx, span := tr.Start(ctx, "forward-request")
+	defer span.End()
+
 	reqBody, _ := json.Marshal(map[string]string{"cep": cep})
 	req, err := http.NewRequestWithContext(ctx, "POST", c.BaseURL, bytes.NewBuffer(reqBody))
 	if err != nil {

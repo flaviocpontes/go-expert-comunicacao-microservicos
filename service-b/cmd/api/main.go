@@ -33,7 +33,7 @@ func initTracer(otelCollectorAddr string) (*sdktrace.TracerProvider, error) {
 		return nil, fmt.Errorf("failed to create resource: %w", err)
 	}
 
-	ctx, cancel := context.WithTimeout(ctx, time.Second)
+	ctx, cancel := context.WithTimeout(ctx, 10*time.Second)
 	defer cancel()
 	conn, err := grpc.DialContext(ctx, otelCollectorAddr,
 		grpc.WithTransportCredentials(insecure.NewCredentials()),

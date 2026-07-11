@@ -79,7 +79,7 @@ func (h *ServiceBHandler) Handle(w http.ResponseWriter, r *http.Request) {
 	// 3. Convert and Respond
 	tempC := weatherResp.Current.TempC
 	tempF := tempC*1.8 + 32
-	tempK := tempC + 273.15
+	tempK := tempC + 273
 
 	res := SuccessResponse{
 		City:  viaCepResp.Localidade,
