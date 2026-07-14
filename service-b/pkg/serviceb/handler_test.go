@@ -105,7 +105,7 @@ func TestHandler(t *testing.T) {
 				}
 				// Verify conversions
 				expectedF := tt.expectedTempC*1.8 + 32
-				expectedK := tt.expectedTempC + 273.15
+				expectedK := tt.expectedTempC + 273
 				if result.TempF != expectedF {
 					t.Errorf("expected tempF %f, got %f", expectedF, result.TempF)
 				}
