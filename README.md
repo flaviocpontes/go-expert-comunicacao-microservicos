@@ -76,4 +76,4 @@ These tests verify the entire flow from Service A to Service B, including:
 ## Temperature Conversions
 
 - **Fahrenheit:** `F = C * 1.8 + 32`
-- **Kelvin:** `K = C + 273.15`
+- **Kelvin:** `K = C + 273`
